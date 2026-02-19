@@ -16,8 +16,7 @@ export const auth = betterAuth({
     "exp://**",
     "exp://196.168.*.*:*/**",
     "exp://192.168.*.*:*/**",
-    "http://localhost:3000",
-    "http://localhost:3001",
+    ...process.env.CORS_ORIGIN?.split(",").map(origin => origin.trim()) ?? [],
   ],
   database: prismaAdapter(prisma, {
     provider: "mysql",
