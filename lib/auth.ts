@@ -10,6 +10,7 @@ const adapter = new PrismaMariaDb(process.env.DATABASE_URL ?? "");
 const prisma = new PrismaClient({ adapter });
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3001",
   trustedOrigins: [
     "myapp://",
     "exp://",
@@ -37,6 +38,12 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+  },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: process.env.COOKIE_DOMAIN ?? "localhost",
+    }
   },
   socialProviders: {
     github: {
