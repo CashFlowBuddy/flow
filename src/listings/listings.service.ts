@@ -46,10 +46,15 @@ export class ListingsService {
     });
   }
 
-  async update(id: string, dto: UpdateListingDto, userId: string) {
+  async update(id: string, dto: UpdateListingDto, userId: string, isAdmin: boolean = false) {
     const listing = await this.prisma.listing.findUnique({ where: { id } });
     if (!listing) throw new NotFoundException('Listing not found');
     if (listing.userId !== userId) throw new ForbiddenException('You can only edit your own listings');
+    
+    if (dto.status && listing.status === 'PENDING' && !isAdmin) {
+      throw new ForbiddenException('Only admins can change listings from pending status');
+    }
+    
     return this.prisma.listing.update({
       where: { id },
       data: dto,
@@ -57,10 +62,10 @@ export class ListingsService {
     });
   }
 
-  async remove(id: string, userId: string) {
+  async remove(id: string, userId: string, isAdmin: boolean = false) {
     const listing = await this.prisma.listing.findUnique({ where: { id } });
     if (!listing) throw new NotFoundException('Listing not found');
-    if (listing.userId !== userId) throw new ForbiddenException('You can only delete your own listings');
+    if (listing.userId !== userId && !isAdmin) throw new ForbiddenException('You can only delete your own listings');
     return this.prisma.listing.delete({ where: { id } });
   }
 

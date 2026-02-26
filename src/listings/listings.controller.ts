@@ -59,9 +59,10 @@ export class ListingsController {
   @ApiParam({ name: 'id', description: 'Listing ID' })
   @ApiResponse({ status: 200, description: 'Listing updated' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Listing not found' })
   update(@Param('id') id: string, @Body() dto: UpdateListingDto, @Session() session) {
-    return this.listingsService.update(id, dto, session.user.id);
+    return this.listingsService.update(id, dto, session.user.id, session.user.role === 'ADMIN');
   }
 
   @Delete(':id')
@@ -71,7 +72,7 @@ export class ListingsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Listing not found' })
   remove(@Param('id') id: string, @Session() session) {
-    return this.listingsService.remove(id, session.user.id);
+    return this.listingsService.remove(id, session.user.id, session.user.role === 'ADMIN');
   }
 
   @Post(':id/save')
