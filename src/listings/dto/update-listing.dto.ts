@@ -1,5 +1,6 @@
-import { IsString, IsOptional, IsEnum, IsNumber, Min } from 'class-validator';
-import { CategoryEnum } from './create-listing.dto';
+import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { CreateListingDto } from './create-listing.dto';
 
 export enum StatusEnum {
   AVAILABLE = 'AVAILABLE',
@@ -9,30 +10,9 @@ export enum StatusEnum {
   ARCHIVED = 'ARCHIVED',
 }
 
-export class UpdateListingDto {
-  @IsOptional()
-  @IsString()
-  title?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
+export class UpdateListingDto extends PartialType(CreateListingDto) {
+  @ApiPropertyOptional({ enum: StatusEnum, example: StatusEnum.AVAILABLE })
   @IsOptional()
   @IsEnum(StatusEnum)
   status?: StatusEnum;
-
-  @IsOptional()
-  @IsEnum(CategoryEnum)
-  category?: CategoryEnum;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  price?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  discountedPrice?: number;
 }
