@@ -5,6 +5,7 @@ import { PrismaClient } from "../generated/prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { expo } from "@better-auth/expo";
 import { nextCookies } from "better-auth/next-js";
+import { openAPI } from "better-auth/plugins";
 
 const adapter = new PrismaMariaDb(process.env.DATABASE_URL ?? "");
 const prisma = new PrismaClient({ adapter });
@@ -24,7 +25,8 @@ export const auth = betterAuth({
   }),
   plugins: [
     expo(),
-    nextCookies()
+    nextCookies(),
+    openAPI(),
   ],
   user: {
     additionalFields: {

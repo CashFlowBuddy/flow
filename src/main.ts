@@ -16,9 +16,10 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
-    .setTitle('Flow API')
+    .setTitle('CashFlowBuddy API')
     .setVersion('1.0')
     .setDescription('API documentation for the CashFlowBuddy backend')
+    .setExternalDoc('Authentication Reference', "/api/auth/reference")
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
