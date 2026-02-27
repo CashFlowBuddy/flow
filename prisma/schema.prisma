@@ -32,6 +32,7 @@ model User {
   role          Role      @default(USER)
   listings      Listing[]
   chatRooms     ChatRoom[] @relation("UserChats")
+  messages      Message[]
   savedListings Listing[]  @relation("SavedListings")
 
   @@unique([email])
@@ -136,7 +137,6 @@ model Picture {
 
 model ChatRoom {
   id        String   @id
-  message   String   @db.Text
   users     User[]   @relation("UserChats")
   forListingId String
   forListing   Listing  @relation(fields: [forListingId], references: [id], onDelete: Cascade)
@@ -149,6 +149,7 @@ model Message {
   id        String   @id
   content   String   @db.Text
   byUserId  String
+  byUser    User     @relation(fields: [byUserId], references: [id], onDelete: Cascade)
   chatRoomId String
   chatRoom  ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

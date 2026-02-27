@@ -38,8 +38,7 @@ export class ChatService {
     return this.prisma.chatRoom.create({
       data: {
         id: randomUUID(),
-        message: '',
-        forListingId: listingId,
+        forListing: { connect: { id: listingId } },
         users: {
           connect: [
             { id: requestingUserId },
@@ -79,8 +78,8 @@ export class ChatService {
       data: {
         id: randomUUID(),
         content,
-        byUserId,
-        chatRoomId,
+        byUser: { connect: { id: byUserId } },
+        chatRoom: { connect: { id: chatRoomId } },
       },
     });
   }

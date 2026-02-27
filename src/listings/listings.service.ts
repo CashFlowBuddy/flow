@@ -12,7 +12,7 @@ export class ListingsService {
     const id = randomUUID();
     const url = dto.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + id.slice(0, 8);
     return this.prisma.listing.create({
-      data: { id, url, userId, ...dto },
+      data: { id, url, ...dto, user: { connect: { id: userId } } },
       include: { pictures: true, user: { select: { id: true, name: true, image: true } } },
     });
   }
