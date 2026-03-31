@@ -47,15 +47,25 @@ export class ListingsService {
     });
   }
 
-  async findOne(idOrUrl: string) {
+  async findOne(idOrUrl: string, userId?: string) {
     const listing = await this.prisma.listing.findFirst({
       where: {
         OR: [{ id: idOrUrl }, { url: idOrUrl }],
       },
-      include: { pictures: true, user: { select: { id: true, name: true, image: true } } },
+      include: {
+        pictures: true,
+        user: { select: { id: true, name: true, image: true } },
+        ...(userId
+          ? { savedBy: { where: { id: userId }, select: { id: true } } }
+          : {}),
+      },
     });
     if (!listing) throw new NotFoundException('Listing not found');
-    return listing;
+    if (!userId) return listing;
+
+    const isSaved = listing.savedBy?.length > 0;
+    const { savedBy, ...rest } = listing;
+    return { ...rest, isSaved };
   }
 
   async findByUser(userId: string) {
@@ -106,15 +116,23 @@ export class ListingsService {
   }
 
   async save(listingId: string, userId: string) {
+    const listing = await this.prisma.listing.findFirst({
+      where: { OR: [{ id: listingId }, { url: listingId }] },
+    });
+    if (!listing) throw new NotFoundException('Listing not found');
     return this.prisma.listing.update({
-      where: { id: listingId },
+      where: { id: listing.id },
       data: { savedBy: { connect: { id: userId } } },
     });
   }
 
   async unsave(listingId: string, userId: string) {
+    const listing = await this.prisma.listing.findFirst({
+      where: { OR: [{ id: listingId }, { url: listingId }] },
+    });
+    if (!listing) throw new NotFoundException('Listing not found');
     return this.prisma.listing.update({
-      where: { id: listingId },
+      where: { id: listing.id },
       data: { savedBy: { disconnect: { id: userId } } },
     });
   }

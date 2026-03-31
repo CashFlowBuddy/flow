@@ -25,7 +25,7 @@ export class ListingsController {
   @ApiQuery({ name: 'category', required: false, description: 'Filter by category' })
   @ApiQuery({ name: 'search', required: false, description: 'Search by keyword' })
   @ApiResponse({ status: 200, description: 'List of listings', type: ListingEntity, isArray: true })
-  findAll(@Query('category') category?: string, @Query('search') search?: string, @Session() session?: any) {
+  findAll(@Query('category') category?: string, @Query('search') search?: string) {
     return this.listingsService.findAll(category, search);
   }
 
@@ -45,14 +45,14 @@ export class ListingsController {
     return this.listingsService.findByUser(session.user.id);
   }
 
-  @AllowAnonymous()
+  @OptionalAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Get a listing by ID or URL slug' })
   @ApiParam({ name: 'id', description: 'Listing ID or URL slug' })
   @ApiResponse({ status: 200, description: 'The listing', type: ListingEntity })
   @ApiResponse({ status: 404, description: 'Listing not found' })
-  findOne(@Param('id') id: string) {
-    return this.listingsService.findOne(id);
+  findOne(@Param('id') id: string, @Session() session?: any) {
+    return this.listingsService.findOne(id, session?.user?.id);
   }
 
   @Patch(':id')
