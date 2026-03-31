@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { randomUUID } from 'crypto';
 
@@ -28,17 +28,25 @@ export class ChatService {
           },
         },
       },
-      include: { users: { select: { id: true, name: true } } },
+      include: {
+        users: { select: { id: true, name: true, image: true } },
+        forListing: { select: { id: true, title: true, url: true } },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
     });
 
     if (existingRoom) {
-      return existingRoom;
+      return { room: existingRoom, existed: true };
     }
 
-    return this.prisma.chatRoom.create({
+    const room = await this.prisma.chatRoom.create({
       data: {
         id: randomUUID(),
-        forListing: { connect: { id: listingId } },
+        message: '',
+        forListingId: listingId,
         users: {
           connect: [
             { id: requestingUserId },
@@ -46,8 +54,17 @@ export class ChatService {
           ],
         },
       },
-      include: { users: { select: { id: true, name: true } } },
+      include: {
+        users: { select: { id: true, name: true, image: true } },
+        forListing: { select: { id: true, title: true, url: true } },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
+      },
     });
+
+    return { room, existed: false };
   }
 
   async getRoomsForUser(userId: string) {
@@ -55,7 +72,7 @@ export class ChatService {
       where: { users: { some: { id: userId } } },
       include: {
         users: { select: { id: true, name: true, image: true } },
-        forListing: { select: { id: true, title: true } },
+        forListing: { select: { id: true, title: true, url: true } },
         messages: {
           orderBy: { createdAt: 'desc' },
           take: 1,
@@ -65,8 +82,18 @@ export class ChatService {
     });
   }
 
-  async getMessageHistory(chatRoomId: string, take = 50) {
+  async getMessageHistory(chatRoomId: string, userId: string, take   = 50) {
+    const isUserInRoom = await this.isUserInRoom(chatRoomId, userId);
+    if (!isUserInRoom) {
+      throw new ForbiddenException('You are not a participant in this chat room');
+    }
+
     return this.prisma.message.findMany({
+      select: {
+        byUserId: true,
+        content: true,
+        createdAt: true,
+      },
       where: { chatRoomId },
       orderBy: { createdAt: 'asc' },
       take,
@@ -78,8 +105,8 @@ export class ChatService {
       data: {
         id: randomUUID(),
         content,
-        byUser: { connect: { id: byUserId } },
-        chatRoom: { connect: { id: chatRoomId } },
+        byUserId,
+        chatRoomId,
       },
     });
   }
