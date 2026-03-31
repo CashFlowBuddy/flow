@@ -76,7 +76,7 @@ export class ChatGateway
       return;
     }
     client.join(dto.chatRoomId);
-    const history = await this.chatService.getMessageHistory(dto.chatRoomId);
+    const history = await this.chatService.getMessageHistory(dto.chatRoomId, userId);
     client.emit('messageHistory', history);
 
     this.logger.log(`${client.data.userName} joined room ${dto.chatRoomId}`);

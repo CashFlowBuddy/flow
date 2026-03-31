@@ -2,6 +2,8 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { CreatePictureDto } from './dto/create-picture.dto';
 import { PrismaService } from '../prisma.service';
 import { randomUUID } from 'crypto';
+import { join } from 'path';
+import { promises as fs } from 'fs';
 
 @Injectable()
 export class PicturesService {
@@ -36,6 +38,15 @@ export class PicturesService {
     });
     if (!picture) throw new NotFoundException('Picture not found');
     if (picture.listing.userId !== userId) throw new ForbiddenException('You can only delete pictures from your own listings');
-    return this.prisma.picture.delete({ where: { id } });
+    const deleted = await this.prisma.picture.delete({ where: { id } });
+
+    if (picture.url.startsWith('/uploads/')) {
+      const filePath = join(process.cwd(), picture.url.replace(/^\//, ''));
+      try {
+        await fs.unlink(filePath);
+      } catch {}
+    }
+
+    return deleted;
   }
 }

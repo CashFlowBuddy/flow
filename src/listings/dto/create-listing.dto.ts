@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsEnum, IsNumber, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum CategoryEnum {
   ELECTRONICS = 'ELECTRONICS',
@@ -26,14 +26,8 @@ export class CreateListingDto {
   @IsEnum(CategoryEnum)
   category: CategoryEnum;
 
-  @ApiProperty({ example: 999.99, minimum: 0 })
+  @ApiProperty({ example: 999, minimum: 0 })
   @IsNumber()
   @Min(0)
   price: number;
-
-  @ApiPropertyOptional({ example: 899.99, minimum: 0 })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  discountedPrice?: number;
 }
