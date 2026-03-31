@@ -5,26 +5,28 @@ import { PrismaClient } from "../generated/prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { expo } from "@better-auth/expo";
 import { nextCookies } from "better-auth/next-js";
+import { openAPI } from "better-auth/plugins";
 
 const adapter = new PrismaMariaDb(process.env.DATABASE_URL ?? "");
 const prisma = new PrismaClient({ adapter });
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3001",
   trustedOrigins: [
     "myapp://",
     "exp://",
     "exp://**",
     "exp://196.168.*.*:*/**",
     "exp://192.168.*.*:*/**",
-    "http://localhost:3000",
-    "http://localhost:3001",
+    ...process.env.CORS_ORIGIN?.split(",").map(origin => origin.trim()) ?? [],
   ],
   database: prismaAdapter(prisma, {
     provider: "mysql",
   }),
   plugins: [
     expo(),
-    nextCookies()
+    nextCookies(),
+    openAPI(),
   ],
   user: {
     additionalFields: {
@@ -38,6 +40,12 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+  },
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: process.env.COOKIE_DOMAIN ?? "localhost",
+    }
   },
   socialProviders: {
     github: {

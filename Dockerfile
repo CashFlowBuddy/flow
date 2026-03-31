@@ -16,6 +16,7 @@ COPY . .
 
 # Build the NestJS application
 RUN corepack enable pnpm \
+  && pnpm prisma generate \
   && pnpm run build
 
 # Expose the application port
