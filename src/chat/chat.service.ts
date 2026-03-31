@@ -45,7 +45,6 @@ export class ChatService {
     const room = await this.prisma.chatRoom.create({
       data: {
         id: randomUUID(),
-        message: '',
         forListingId: listingId,
         users: {
           connect: [
