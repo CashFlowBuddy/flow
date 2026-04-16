@@ -55,6 +55,7 @@ export class PicturesController {
   @ApiResponse({ status: 201, description: 'Picture uploaded', type: PictureEntity })
   @ApiResponse({ status: 400, description: 'Invalid file input' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   upload(
     @UploadedFile() file: any,
     @Body('listingId') listingId: string,
