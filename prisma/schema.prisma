@@ -110,7 +110,7 @@ model Listing {
   title       String   @db.Text
   url         String   @db.Text
   description String   @db.Text
-  status      StatusEnum @default(AVAILABLE)
+  status      StatusEnum @default(PENDING)
   category    CategoryEnum
   pictures    Picture[]
   price       Float

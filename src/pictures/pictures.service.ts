@@ -13,6 +13,8 @@ export class PicturesService {
     const listing = await this.prisma.listing.findUnique({ where: { id: dto.listingId } });
     if (!listing) throw new NotFoundException('Listing not found');
     if (listing.userId !== userId) throw new ForbiddenException('You can only add pictures to your own listings');
+    const count = await this.prisma.picture.count({ where: { listingId: dto.listingId } });
+    if (count >= 6) throw new ForbiddenException('You can only have up to 6 pictures per listing');
     return this.prisma.picture.create({
       data: { id: randomUUID(), ...dto },
     });

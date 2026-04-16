@@ -54,7 +54,7 @@ export class ListingsService {
       },
       include: {
         pictures: true,
-        user: { select: { id: true, name: true, image: true } },
+        user: { select: { id: true, name: true, image: true, role: true } },
         ...(userId
           ? { savedBy: { where: { id: userId }, select: { id: true } } }
           : {}),
@@ -81,8 +81,16 @@ export class ListingsService {
     if (!listing) throw new NotFoundException('Listing not found');
     if (listing.userId !== userId && !isAdmin) throw new ForbiddenException('You can only edit your own listings');
     
-    if (dto.status && listing.status === 'PENDING' && !isAdmin) {
-      throw new ForbiddenException('Only admins can change listings from pending status');
+    if (dto.status) {
+      if (dto.status !== 'PENDING' && listing.status === 'PENDING' && !isAdmin) {
+        throw new ForbiddenException('Only admins can change listings from pending status');
+      }
+      if (dto.status === 'ARCHIVED' && listing.status !== 'ARCHIVED' && !isAdmin) {
+        throw new ForbiddenException('Only admins can archive listings');
+      }
+      if (listing.status === 'ARCHIVED' && !isAdmin) {
+        throw new ForbiddenException('Only admins can change listings from archived status');
+      }
     }
 
     const dataToUpdate: Record<string, any> = {};
