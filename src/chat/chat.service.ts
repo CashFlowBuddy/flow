@@ -67,7 +67,7 @@ export class ChatService {
   }
 
   async getRoomsForUser(userId: string) {
-    return this.prisma.chatRoom.findMany({
+    const rooms = await this.prisma.chatRoom.findMany({
       where: { users: { some: { id: userId } } },
       include: {
         users: { select: { id: true, name: true, image: true } },
@@ -77,7 +77,12 @@ export class ChatService {
           take: 1,
         },
       },
-      orderBy: { updatedAt: 'desc' },
+    });
+
+    return rooms.sort((a, b) => {
+      const aDate = a.messages[0]?.createdAt ?? new Date(0);
+      const bDate = b.messages[0]?.createdAt ?? new Date(0);
+      return bDate.getTime() - aDate.getTime();
     });
   }
 
