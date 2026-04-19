@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma.service';
 import { promises as fs } from 'fs';
@@ -10,7 +14,14 @@ export class UsersService {
 
   async findAll() {
     return this.prisma.user.findMany({
-      select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        createdAt: true,
+      },
     });
   }
 
@@ -47,16 +58,37 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto, requesterId: string) {
-    if (id !== requesterId) throw new ForbiddenException('You can only update your own profile');
+    const requester = await this.prisma.user.findUnique({
+      where: { id: requesterId },
+      select: { role: true },
+    });
+
+    const isAdmin = requester?.role === 'ADMIN';
+    if (id !== requesterId && !isAdmin) {
+      throw new ForbiddenException('You can only update your own profile');
+    }
+
+    if (dto.role && !isAdmin) {
+      throw new ForbiddenException('Only admins can change user role');
+    }
+
     return this.prisma.user.update({
       where: { id },
       data: dto,
-      select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        createdAt: true,
+      },
     });
   }
 
   async uploadAvatar(id: string, requesterId: string, imageUrl: string) {
-    if (id !== requesterId) throw new ForbiddenException('You can only update your own profile');
+    if (id !== requesterId)
+      throw new ForbiddenException('You can only update your own profile');
 
     const existingUser = await this.prisma.user.findUnique({
       where: { id },
@@ -68,11 +100,21 @@ export class UsersService {
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: { image: imageUrl },
-      select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        createdAt: true,
+      },
     });
 
     if (existingUser.image?.startsWith('/uploads/avatars/')) {
-      const oldFilePath = join(process.cwd(), existingUser.image.replace(/^\//, ''));
+      const oldFilePath = join(
+        process.cwd(),
+        existingUser.image.replace(/^\//, ''),
+      );
       try {
         await fs.unlink(oldFilePath);
       } catch {
@@ -84,7 +126,16 @@ export class UsersService {
   }
 
   async remove(id: string, requesterId: string) {
-    if (id !== requesterId) throw new ForbiddenException('You can only delete your own account');
+    const requester = await this.prisma.user.findUnique({
+      where: { id: requesterId },
+      select: { role: true },
+    });
+
+    const isAdmin = requester?.role === 'ADMIN';
+    if (id !== requesterId && !isAdmin) {
+      throw new ForbiddenException('You can only delete your own account');
+    }
+
     return this.prisma.user.delete({ where: { id } });
   }
 }
