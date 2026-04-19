@@ -37,7 +37,10 @@ export class ListingsService {
     });
   }
 
-  async findAllAdmin(status?: string) {
+  async findAllAdmin(status?: string, isAdmin: boolean = false) {
+    if (!isAdmin) {
+      throw new ForbiddenException('Only admins can view all listings');
+    }
     return this.prisma.listing.findMany({
       where: {
         ...(status ? { status: status as any } : {}),

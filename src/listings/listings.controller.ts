@@ -29,6 +29,15 @@ export class ListingsController {
     return this.listingsService.findAll(category, search);
   }
 
+  @Get('admin')
+  @ApiOperation({ summary: 'Get all listings (admin)' })
+  @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
+  @ApiResponse({ status: 200, description: 'List of listings', type: ListingEntity, isArray: true })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  findAllAdmin(@Query('status') status?: string, @Session() session?) {
+    return this.listingsService.findAllAdmin(status, session?.user?.role === 'ADMIN');
+  }
+
   @Get('saved')
   @ApiOperation({ summary: 'Get saved listings for the current user' })
   @ApiResponse({ status: 200, description: 'List of saved listings', type: ListingEntity, isArray: true })
