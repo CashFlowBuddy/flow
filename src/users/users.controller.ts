@@ -22,7 +22,7 @@ import {
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
-import { Session } from '@thallesp/nestjs-better-auth';
+import { OptionalAuth, Session } from '@thallesp/nestjs-better-auth';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { randomUUID } from 'crypto';
@@ -63,6 +63,7 @@ export class UsersController {
     return this.usersService.findMe(session.user.id);
   }
 
+  @OptionalAuth()
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
@@ -83,23 +84,6 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
     @Session() session,
   ) {
-    return this.usersService.update(id, dto, session.user.id);
-  }
-
-  @Patch('admin/:id')
-  @ApiOperation({ summary: 'Update a user as admin' })
-  @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'User updated', type: UserEntity })
-  @ApiResponse({ status: 403, description: 'Forbidden' })
-  updateAdmin(
-    @Param('id') id: string,
-    @Body() dto: UpdateUserDto,
-    @Session() session,
-  ) {
-    if (session.user.role !== 'ADMIN') {
-      throw new ForbiddenException('Only admins can update users');
-    }
-
     return this.usersService.update(id, dto, session.user.id);
   }
 
