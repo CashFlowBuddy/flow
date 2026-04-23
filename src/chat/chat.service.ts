@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { randomUUID } from 'crypto';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async createRoom(listingId: string, requestingUserId: string) {
     const listing = await this.prisma.listing.findUnique({
@@ -105,7 +109,7 @@ export class ChatService {
   }
 
   async saveMessage(chatRoomId: string, byUserId: string, content: string) {
-    return this.prisma.message.create({
+    const message = await this.prisma.message.create({
       data: {
         id: randomUUID(),
         content,
@@ -113,6 +117,10 @@ export class ChatService {
         chatRoomId,
       },
     });
+
+    void this.notificationsService.notifyNewMessageRecipients(chatRoomId, byUserId, content);
+
+    return message;
   }
 
   async isUserInRoom(chatRoomId: string, userId: string): Promise<boolean> {
