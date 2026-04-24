@@ -1,98 +1,149 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Flow API (CashFlowBuddy Backend)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend service for a marketplace-style app built with NestJS, Prisma, MariaDB, Better Auth, and Socket.IO.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## What this project provides
 
-## Description
+- Email/password and social authentication with Better Auth
+- Role-aware user flows (USER and ADMIN)
+- Listing CRUD, saved listings, and admin listing moderation endpoints
+- Picture uploads for listings and user avatars
+- Chat rooms and message history for listing conversations
+- Expo push token registration for notifications
+- Swagger API docs and Better Auth OpenAPI reference
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech stack
 
-## Project setup
+- Runtime: Node.js 22, TypeScript, NestJS 11
+- Database: MariaDB + Prisma 7 (`@prisma/adapter-mariadb`)
+- Auth: `better-auth` + `@thallesp/nestjs-better-auth`
+- API docs: `@nestjs/swagger`
+- Realtime: Socket.IO
+- Package manager: pnpm
 
-```bash
-$ pnpm install
+## Prerequisites
+
+- Node.js 22+
+- pnpm 9+
+- Docker (recommended for local MariaDB)
+
+## Environment variables
+
+Create `.env` from `.env.example` and set real secrets.
+
+Required/important variables:
+
+- `DATABASE_URL` (MariaDB connection string)
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL` (for example `http://localhost:3000`)
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+- `CORS_ORIGIN` (comma-separated list)
+- `COOKIE_DOMAIN` (optional, defaults to `localhost`)
+- `PORT` (optional, defaults to `3000`)
+
+Example:
+
+```env
+DATABASE_URL=mysql://flow:flow@localhost:3306/flow
+BETTER_AUTH_SECRET=replace-me
+BETTER_AUTH_URL=http://localhost:3000
+GITHUB_CLIENT_ID=replace-me
+GITHUB_CLIENT_SECRET=replace-me
+CORS_ORIGIN=http://localhost:3001
+COOKIE_DOMAIN=localhost
+PORT=3000
 ```
 
-## Compile and run the project
+## Local development
+
+1. Install dependencies:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+2. Start database (Docker):
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+docker compose up -d db
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+3. Generate Prisma client and sync schema:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm prisma generate
+pnpm prisma db push
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. Start API in watch mode:
 
-## Resources
+```bash
+pnpm run start:dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+The API will run on `http://localhost:3000` by default.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Run with Docker Compose
 
-## Support
+Run API + MariaDB together:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+docker compose up --build
+```
 
-## Stay in touch
+Services:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- API: `http://localhost:3000`
+- MariaDB: `localhost:3306`
+
+The API container runs `pnpm prisma db push` on startup, then starts `node dist/src/main`.
+
+## API documentation
+
+- Swagger UI: `http://localhost:3000/api/docs`
+- Better Auth reference: `http://localhost:3000/api/auth/reference`
+- Global REST prefix: `/api`
+
+## Project scripts
+
+```bash
+# build
+pnpm run build
+
+# dev / prod
+pnpm run start
+pnpm run start:dev
+pnpm run start:prod
+
+# quality
+pnpm run lint
+pnpm run format
+
+# tests
+pnpm run test
+pnpm run test:watch
+pnpm run test:cov
+pnpm run test:e2e
+pnpm run test:report
+```
+
+## Key modules
+
+- `src/users`: user profile, admin-only list, avatar uploads
+- `src/listings`: listing CRUD, saved listings, admin status filtering
+- `src/pictures`: listing image uploads and retrieval
+- `src/chat`: chat rooms, message history, websocket gateway
+- `src/notifications`: Expo push token registration
+- `src/prisma`: Prisma service/module integration
+
+## Testing and reports
+
+- Coverage output: `coverage/`
+- Machine-readable test output: `test-results/jest-results.json`
+- JUnit report: `test-results/junit.xml`
+- Human summary script: `scripts/generate-test-results.mjs`
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED
